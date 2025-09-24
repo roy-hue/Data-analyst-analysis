@@ -4,78 +4,74 @@ import re
 from collections import Counter
 import streamlit as st
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 # -------------------------
 # STEP 1: Load data
-# Replace this with your parsed PDF → CSV/Excel if needed
-# For now, using a sample dataset based on your PDF table
+# Replace with your actual CSV/Excel that has job descriptions
+# Expected columns: ["Date", "Tools", "Problem", "Process"]
+# Example: job_data.csv
+# Date should be in format YYYY-MM-DD
 
-data = [
-    ["Tableau, SQL", "High shipping & ops costs without visibility", "Cost reduction dashboards for shipping & ops", "Find root causes of cost overruns", "Multi-dashboard analysis", "$120K/year savings"],
-    ["Python, Excel", "Low marketing ROI with unclear A/B test results", "A/B testing for marketing success", "Measure if changes improve conversion", "Statistical significance testing", "ROI up 15%"],
-    ["Python, Tableau", "High employee turnover", "HR attrition analysis", "Predict risk of leaving", "Turnover dashboards", "Predicted 80% high-risk"],
-    ["Python, SAS", "Rising churn rates", "Customer churn modeling", "Identify churn drivers", "Logistic regression", "Reduced churn 10%"],
-    ["SAS Forecast Studio", "Frequent ATM outages", "ATM replenishment forecasting", "Forecast demand spikes", "Time series modeling", "Outages down 95%"],
-    ["Python, SQL", "Manual data prep", "ETL automation", "Centralized analytics", "Automated ingestion", "Reduced prep 90%"],
-]
+@st.cache_data
+def load_data():
+    try:
+        df = pd.read_csv("job_data.csv")
+    except FileNotFoundError:
+        st.error("❌ Could not find job_data.csv. Please place it in the project folder.")
+        return pd.DataFrame()
+    
+    # Ensure date column is datetime
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+    df = df.dropna(subset=["Date"])
+    return df
 
-df = pd.DataFrame(data, columns=["Tools", "Problem", "Process", "Aim", "Solution", "Impact"])
+df = load_data()
 
+if df.empty:
+    st.stop()
 
 # -------------------------
-# STEP 2: Frequency analysis function
-def explode_and_count(series):
+# STEP 2: Filter last month + limit to 1,000 rows
+one_month_ago = datetime.now() - timedelta(days=30)
+df_recent = df[df["Date"] >= one_month_ago].sort_values("Date", ascending=False).head(1000)
+
+# -------------------------
+# STEP 3: Frequency analysis
+def explode_and_count(series, top_n=50):
     words = []
     for entry in series.dropna():
         for w in re.split(r"[,\s/&]+", str(entry)):
             if w and len(w) > 2:  # skip very short words
                 words.append(w.lower())
-    return Counter(words)
+    return pd.DataFrame(Counter(words).most_common(top_n), columns=["Keyword", "Count"])
 
-
-tool_counts = explode_and_count(df["Tools"])
-problem_counts = explode_and_count(df["Problem"])
-process_counts = explode_and_count(df["Process"])
-
-
-# -------------------------
-# STEP 3: Convert to DataFrames
-tool_freq = pd.DataFrame(tool_counts.most_common(), columns=["Tool/Keyword", "Count"])
-problem_freq = pd.DataFrame(problem_counts.most_common(), columns=["Problem Keyword", "Count"])
-process_freq = pd.DataFrame(process_counts.most_common(), columns=["Process Keyword", "Count"])
-
+tool_freq = explode_and_count(df_recent["Tools"])
+problem_freq = explode_and_count(df_recent["Problem"])
+process_freq = explode_and_count(df_recent["Process"])
 
 # -------------------------
 # STEP 4: Streamlit UI
-st.title("📊 High Frequency Project Data Analysis")
-st.write("This app extracts high-frequency **tools, problems, and processes** from project records.")
+st.title("📊 Job Description Keyword Analysis")
+st.write(f"Analyzing the last **{len(df_recent)} job descriptions** from the past month.")
 
-# Tabs for organization
 tab1, tab2, tab3 = st.tabs(["🔧 Tools", "⚠️ Problems", "⚙️ Processes"])
 
-with tab1:
-    st.subheader("Top Tools / Keywords")
-    st.dataframe(tool_freq)
+def render_tab(df_freq, title, xlabel):
+    st.subheader(title)
+    st.dataframe(df_freq)
     fig, ax = plt.subplots()
-    ax.bar(tool_freq["Tool/Keyword"][:10], tool_freq["Count"][:10])
-    ax.set_title("Top 10 Tools")
+    ax.bar(df_freq["Keyword"], df_freq["Count"])
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
     ax.tick_params(axis='x', rotation=45)
     st.pyplot(fig)
+
+with tab1:
+    render_tab(tool_freq, "Top Tools / Keywords", "Tools")
 
 with tab2:
-    st.subheader("Top Problem Keywords")
-    st.dataframe(problem_freq)
-    fig, ax = plt.subplots()
-    ax.bar(problem_freq["Problem Keyword"][:10], problem_freq["Count"][:10])
-    ax.set_title("Top 10 Problems")
-    ax.tick_params(axis='x', rotation=45)
-    st.pyplot(fig)
+    render_tab(problem_freq, "Top Problem Keywords", "Problems")
 
 with tab3:
-    st.subheader("Top Process Keywords")
-    st.dataframe(process_freq)
-    fig, ax = plt.subplots()
-    ax.bar(process_freq["Process Keyword"][:10], process_freq["Count"][:10])
-    ax.set_title("Top 10 Processes")
-    ax.tick_params(axis='x', rotation=45)
-    st.pyplot(fig)
+    render_tab(process_freq, "Top Process Keywords", "Processes")
