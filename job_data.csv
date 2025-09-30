@@ -1,0 +1,21 @@
+Date,Tools,Problem,Process
+2025-09-30,"Python, SQL",No real-time view for leadership,"Dashboard, SQL Refresh"
+2025-09-29,"Tableau, Python","High turnover, no early warnings",Attrition Risk Modeling
+2025-09-28,"Tableau, SQL","Stale, manual dashboards","Auto Refresh, SQL Scheduling"
+2025-09-27,"SAS, Python",Inaccurate financial forecasts,"ARIMA, Holt-Winters Forecasting"
+2025-09-26,"Python, SAS",High customer churn,"Logistic Regression, Churn Modeling"
+2025-09-25,"Python, SAS",Price optimization unclear,Price Elasticity Modeling
+2025-09-24,"Tableau, SQL",High operational costs,Cost Reduction Dashboards
+2025-09-23,"Python, Tableau","Late deliveries, high logistics cost",Route Optimization Modeling
+2025-09-22,"Python, Excel",Unclear ROI from marketing,"A/B Testing, Significance Testing"
+2025-09-21,"Python, Airflow",Manual model runs,"Workflow Pipelines, Automation"
+2025-09-20,"Tableau, SQL",Inconsistent reporting cadence,Auto Refresh Scheduling
+2025-09-19,"Python, SQL",Scattered data across systems,Unified Reporting Schema
+2025-09-18,"Python, SQL",Manual ETL,"ETL Automation, Ingestion Scripts"
+2025-09-17,SAS,"ATM cashouts, outages",ATM Forecast Modeling
+2025-09-16,"Python, Tableau",Low ROI,A/B Testing
+2025-09-15,"Python, SQL",Cross-department silos,Schema Integration
+2025-09-14,"Python, SAS",Poor pricing strategy,Elasticity Modeling
+2025-09-13,"Python, Tableau",Need for HR exit prediction,Risk Dashboards
+2025-09-12,"Python, SQL",Need unified insights,Reporting Schema
+2025-09-11,"Airflow, Python",Manual forecasts,Forecast Workflow Pipelines
